@@ -2,34 +2,34 @@
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { usePodcasts, type Podcast } from '../providers/podcast-provider';
 
-interface Podcast {
-  id: string;
-  title: string;
-  description: string;
-  host: string;
-  category: string;
-  participants: number;
-  likes: number;
-  comments: number;
-  tags: string[];
-  image: string;
-  poster: {
-    name: string;
-    avatar: string;
-  };
-}
+// Using Podcast type from provider
 
 interface PodcastCardProps {
   podcast: Podcast;
 }
 
 export function PodcastCard({ podcast }: PodcastCardProps) {
+  const { likePodcast, addComment } = usePodcasts();
+  
   const formatParticipants = (count: number) => {
     if (count >= 1000) {
       return `${(count / 1000).toFixed(1)}k`;
     }
     return count.toString();
+  };
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    likePodcast(podcast.id);
+  };
+
+  const handleComment = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addComment(podcast.id);
   };
 
   return (
@@ -77,17 +77,6 @@ export function PodcastCard({ podcast }: PodcastCardProps) {
             {podcast.description}
           </p>
 
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1 mb-3">
-            {podcast.tags.slice(0, 2).map((tag) => (
-              <span
-                key={tag}
-                className="text-xs bg-bgAccentPrimary text-fgAccent px-2 py-1 rounded-full"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
 
           {/* Poster and Stats */}
           <div className="flex items-center justify-between mb-3">
@@ -105,18 +94,18 @@ export function PodcastCard({ podcast }: PodcastCardProps) {
             
             {/* Stats */}
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
+              <button onClick={handleLike} className="flex items-center gap-1 hover:text-red-500 transition-colors">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
                 {formatParticipants(podcast.likes)}
-              </span>
-              <span className="flex items-center gap-1">
+              </button>
+              <button onClick={handleComment} className="flex items-center gap-1 hover:text-blue-500 transition-colors">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 {formatParticipants(podcast.comments)}
-              </span>
+              </button>
             </div>
           </div>
 

@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { PodcastCard } from './podcast-card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { usePodcasts } from '../providers/podcast-provider';
 
-// Mock podcast data
-const mockPodcasts = [
+// Moved to providers/podcast-provider.tsx
+/*const mockPodcasts = [
   {
     id: '1',
     title: 'Tech Talk with AI Sarah',
@@ -109,30 +110,20 @@ const mockPodcasts = [
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=casey'
     }
   },
-];
+]; */
 
 export function PodcastFeed() {
   const [searchQuery, setSearchQuery] = useState('');
+  const { searchPodcasts } = usePodcasts();
 
-  const filteredPodcasts = mockPodcasts.filter((podcast) => {
-    const matchesSearch =
-      podcast.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      podcast.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      podcast.host.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
+  const filteredPodcasts = searchPodcasts(searchQuery);
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Header */}
+      {/* Search Header */}
       <div className="border-separator1 bg-card border-b">
         <div className="mx-auto max-w-7xl px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-foreground text-4xl font-bold tracking-tight">Rush Hour</h1>
-          </div>
-
-          {/* Search */}
-          <div className="mx-auto mt-8 max-w-2xl">
+          <div className="mx-auto max-w-2xl">
             <input
               type="text"
               placeholder="Search podcasts, hosts, or topics..."
@@ -176,6 +167,7 @@ export function PodcastFeed() {
           </div>
         )}
       </div>
+
     </div>
   );
 }
