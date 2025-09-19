@@ -83,13 +83,13 @@ export function SessionPageClient({ appConfig }: SessionPageClientProps) {
   if (!podcast) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
+        {/* <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Podcast not found</h1>
           <p className="text-muted-foreground mb-6">The requested podcast could not be found.</p>
           <Button onClick={() => window.location.href = '/'} variant="primary">
             Return to Feed
           </Button>
-        </div>
+        </div> */}
       </div>
     );
   }

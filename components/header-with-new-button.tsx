@@ -23,7 +23,7 @@ export function HeaderWithNewButton() {
     <>
       <header className="fixed top-0 left-0 z-50 w-full flex-row justify-between p-6 flex bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="flex items-center">
-          <span className="text-foreground font-mono text-xs font-bold tracking-wider uppercase">
+          <span className="text-foreground font-mono text-xl font-bold tracking-wider uppercase">
             Rush Hour
           </span>
         </div>
