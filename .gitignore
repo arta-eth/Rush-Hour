@@ -148,3 +148,7 @@ coverage/
 
 # node modules for livekit-voice-agent
 livekit-voice-agent/node_modules
+
+
+# misc
+**/__pycache__

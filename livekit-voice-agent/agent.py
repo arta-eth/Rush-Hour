@@ -1,3 +1,4 @@
+import os
 from dotenv import load_dotenv
 
 from livekit import agents
@@ -6,11 +7,15 @@ from livekit.plugins import (
     openai,
     assemblyai,
     rime,
+    silero,
     noise_cancellation,
 )
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
-load_dotenv(".env.local")
+# Load environment variables from .env.local in the same directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(script_dir, ".env.local")
+load_dotenv(env_path)
 
 
 class Assistant(Agent):
@@ -20,10 +25,10 @@ class Assistant(Agent):
 
 async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
-        stt=assemblyai.STT(model="default", language="en"),
+        stt=assemblyai.STT(),
         llm=openai.LLM(model="gpt-4o-mini"),
-        tts=rime.TTS(model="default", voice="alloy"),
-        vad=rime.VAD(),
+        tts=rime.TTS(),
+        vad=silero.VAD.load(),
         turn_detection=MultilingualModel(),
     )
 
@@ -31,7 +36,7 @@ async def entrypoint(ctx: agents.JobContext):
         room=ctx.room,
         agent=Assistant(),
         room_input_options=RoomInputOptions(
-            # For telephony applications, use `BVCTelephony` instead for best results
+            # For telephony applications, use `BVCTelephony` instead
             noise_cancellation=noise_cancellation.BVC(),
         ),
     )

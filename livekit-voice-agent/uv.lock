@@ -780,6 +780,20 @@ wheels = [
 ]
 
 [[package]]
+name = "livekit-plugins-silero"
+version = "0.7.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "livekit-agents" },
+    { name = "numpy" },
+    { name = "onnxruntime" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fa/e8/dc491ff9683117add7fb5528f0210ebe18959e8f1ddc3ee7a75ef4b0626c/livekit_plugins_silero-0.7.4.tar.gz", hash = "sha256:f399a14a99bacd6e284ca7a2a12273cc8050e362ebecda2d4942055607b22cef", size = 1953007, upload-time = "2024-12-04T17:13:45.352Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/44/54/13ea2d11907f804bc18ef8bceecfd0f43d0f3cdef8f5c2a1a8c344b0a0ec/livekit_plugins_silero-0.7.4-py3-none-any.whl", hash = "sha256:44f111292d548c8eac19ef4e19acaabb1726880410265f54b367307b1e78f61e", size = 1953898, upload-time = "2024-12-04T17:13:34.366Z" },
+]
+
+[[package]]
 name = "livekit-plugins-turn-detector"
 version = "1.2.11"
 source = { registry = "https://pypi.org/simple" }
@@ -815,6 +829,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "livekit-agents", extra = ["assemblyai", "openai", "rime", "turn-detector"] },
     { name = "livekit-plugins-noise-cancellation" },
+    { name = "livekit-plugins-silero" },
     { name = "python-dotenv" },
 ]
 
@@ -822,6 +837,7 @@ dependencies = [
 requires-dist = [
     { name = "livekit-agents", extras = ["assemblyai", "openai", "rime", "turn-detector"], specifier = "~=1.2" },
     { name = "livekit-plugins-noise-cancellation", specifier = "~=0.2" },
+    { name = "livekit-plugins-silero", specifier = "~=0.2" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
 ]
 
