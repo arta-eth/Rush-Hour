@@ -164,14 +164,9 @@ export function SessionPageClient({ appConfig }: SessionPageClientProps) {
                 <h1 className="font-bold text-foreground text-2xl md:text-3xl leading-tight mb-3">
                   {podcast.title}
                 </h1>
-                <p className="text-lg text-muted-foreground mb-4">
+                <p className="text-lg text-muted-foreground">
                   Hosted by {podcast.host}
                 </p>
-                
-                {/* Description */}
-                <div className="prose prose-sm text-muted-foreground leading-relaxed">
-                  <p>{podcast.description}</p>
-                </div>
               </div>
 
               {/* Poster and Stats */}
