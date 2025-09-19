@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveKit Agent Streaming Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .event-log {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        .event-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .connected { background: #4CAF50; color: white; }
+        .disconnected { background: #f44336; color: white; }
+        .reconnecting { background: #ff9800; color: white; }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 LiveKit Agent Stream Monitor</h1>
+        
+        <div>
+            <span>Connection Status: </span>
+            <span id="status" class="status disconnected">Disconnected</span>
+        </div>
+        
+        <div>
+            <button id="connectBtn" onclick="connect()">Connect to Stream</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <h3>📡 Real-time Agent Events</h3>
+        <div id="eventLog" class="event-log">
+            <div class="event-item">Waiting for connection...</div>
+        </div>
+        
+        <h3>🎯 Test Agent API</h3>
+        <div>
+            <button onclick="checkHealth()">Check Health</button>
+            <button onclick="getAgentStatus()">Agent Status</button>
+            <button onclick="startAgent()">Start Agent</button>
+            <button onclick="stopAgent()">Stop Agent</button>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let isConnected = false;
+
+        function updateStatus(status, className) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = status;
+            statusEl.className = `status ${className}`;
+            document.getElementById('connectBtn').disabled = isConnected;
+            document.getElementById('disconnectBtn').disabled = !isConnected;
+        }
+
+        function addEvent(message, type = 'info') {
+            const log = document.getElementById('eventLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const eventDiv = document.createElement('div');
+            eventDiv.className = 'event-item';
+            
+            let icon = '📋';
+            if (type === 'transcript') icon = '💬';
+            else if (type === 'agent_speech_started') icon = '🗣️';
+            else if (type === 'agent_speech_finished') icon = '🔇';
+            else if (type === 'heartbeat') icon = '💓';
+            else if (type === 'error') icon = '❌';
+            else if (type === 'connection') icon = '🔗';
+            
+            eventDiv.innerHTML = `<span style="color: #888;">[${timestamp}]</span> ${icon} ${message}`;
+            log.appendChild(eventDiv);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function connect() {
+            if (isConnected) return;
+            
+            eventSource = new EventSource('http://localhost:5000/api/stream');
+            
+            eventSource.onopen = function(event) {
+                isConnected = true;
+                updateStatus('Connected', 'connected');
+                addEvent('Connected to agent stream', 'connection');
+            };
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'heartbeat') {
+                        addEvent('Connection heartbeat', 'heartbeat');
+                    } else if (data.type === 'transcript') {
+                        addEvent(`Transcript from ${data.participant}: "${data.text}"`, 'transcript');
+                    } else if (data.type === 'agent_speech_started') {
+                        addEvent('Agent started speaking', 'agent_speech_started');
+                    } else if (data.type === 'agent_speech_finished') {
+                        addEvent('Agent finished speaking', 'agent_speech_finished');
+                    } else {
+                        addEvent(`Agent data: ${JSON.stringify(data)}`, 'info');
+                    }
+                } catch (e) {
+                    addEvent(`Error parsing event: ${event.data}`, 'error');
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                if (isConnected) {
+                    updateStatus('Reconnecting...', 'reconnecting');
+                    addEvent('Connection error, attempting to reconnect...', 'error');
+                }
+            };
+        }
+
+        function disconnect() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            isConnected = false;
+            updateStatus('Disconnected', 'disconnected');
+            addEvent('Disconnected from stream', 'connection');
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<div class="event-item">Log cleared...</div>';
+        }
+
+        // API test functions
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (body) options.body = JSON.stringify(body);
+                
+                const response = await fetch(`http://localhost:5000${endpoint}`, options);
+                const data = await response.json();
+                addEvent(`API ${method} ${endpoint}: ${JSON.stringify(data)}`, 'info');
+                return data;
+            } catch (error) {
+                addEvent(`API Error ${endpoint}: ${error.message}`, 'error');
+            }
+        }
+
+        function checkHealth() { apiCall('/api/health'); }
+        function getAgentStatus() { apiCall('/api/agent/status'); }
+        function startAgent() { apiCall('/api/agent/start', 'POST'); }
+        function stopAgent() { apiCall('/api/agent/stop', 'POST'); }
+
+        // Auto-connect on page load
+        window.onload = function() {
+            addEvent('Page loaded. Click "Connect to Stream" to start monitoring.', 'connection');
+        };
+    </script>
+</body>
+</html>
